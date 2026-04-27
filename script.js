@@ -1,6 +1,5 @@
 function roastResume() {
-  const input = document.getElementById("resumeInput").value;
-  const text = input.toLowerCase().trim();
+  const text = document.getElementById("resumeInput").value.toLowerCase().trim();
   const output = document.getElementById("output");
 
   if (!text) {
@@ -8,102 +7,96 @@ function roastResume() {
     return;
   }
 
+  let score = 0;
   let issues = [];
 
-  // ---------------- HELPERS ----------------
   function addIssue(severity, title, why, fix, example) {
     issues.push({ severity, title, why, fix, example });
   }
 
-  function detect(regex) {
-    return regex.test(text);
-  }
+  // ---------------- REAL SIGNAL EXTRACTION ----------------
 
-  // ---------------- QUALITY SCORING (NOT BINARY) ----------------
+  // 1. Skill richness (not just presence)
+  let skillCount =
+    (text.match(/python|java|c\+\+|javascript|rust|go|sql|react|node|docker|tensorflow/g) || []).length;
 
-  let score = 0;
-
-  // ---------------- SKILLS QUALITY ----------------
-  let skillLevel = 0;
-  if (detect(/python|java|c\+\+|javascript|rust|go/)) {
-    skillLevel = text.includes("tensorflow") || text.includes("docker") ? 20 : 15;
-  } else {
+  if (skillCount >= 6) score += 20;
+  else if (skillCount >= 3) score += 12;
+  else {
+    score += 5;
     addIssue(
       "high",
-      "Weak or missing technical skills",
-      "No clear technical stack reduces employability.",
-      "Add structured skills: Languages + Tools + Frameworks.",
-      "Python | Java | Git | Docker | TensorFlow"
+      "Weak skill depth",
+      "Few or vague skills reduce recruiter confidence.",
+      "Add 6–10 relevant tools/technologies grouped properly.",
+      "Python, Java, Docker, React, SQL, Git"
     );
-    skillLevel = 5;
   }
 
-  // ---------------- PROJECT QUALITY ----------------
-  let projectLevel = 0;
-  if (detect(/project|built|developed|created|designed/)) {
-    const hasTech = detect(/api|ml|ai|database|react|node|flask|django/);
-    projectLevel = hasTech ? 25 : 18;
-  } else {
+  // 2. Project depth (NOT just presence)
+  let projectMentions = (text.match(/built|developed|created|designed|project/g) || []).length;
+
+  if (projectMentions >= 5) score += 25;
+  else if (projectMentions >= 2) score += 15;
+  else {
+    score += 5;
     addIssue(
       "high",
-      "No meaningful projects",
-      "Projects are key proof of execution ability.",
-      "Add 2–4 projects with tech + outcome.",
-      "Built NLP resume parser extracting skills automatically"
+      "Weak project depth",
+      "Projects are not detailed or missing.",
+      "Add multiple projects with explanation + tech stack.",
+      "Built ML classifier for spam detection using Python"
     );
-    projectLevel = 0;
   }
 
-  // ---------------- IMPACT QUALITY (CRITICAL FACTOR) ----------------
-  let impactLevel = 0;
-  const hasImpact = /\d+%|\d+\+|\d+\s*(users|students|clients|downloads)/.test(text);
+  // 3. Impact quality (strong signal, not boolean)
+  let impactScore =
+    (text.match(/\d+%|\d+\+|\d+\s*(users|students|clients|downloads)/g) || []).length;
 
-  if (hasImpact) {
-    impactLevel = 25;
-  } else {
+  if (impactScore >= 2) score += 25;
+  else if (impactScore === 1) score += 12;
+  else {
+    score += 3;
     addIssue(
       "high",
       "No measurable impact",
-      "Without numbers, achievements lack credibility.",
-      "Add metrics: %, users, performance improvement.",
-      "Improved model accuracy from 82% → 91%"
+      "Your achievements lack credibility without numbers.",
+      "Add metrics: %, scale, users, improvement.",
+      "Improved accuracy from 82% → 91%"
     );
-    impactLevel = 8; // NOT zero, but heavily reduced credibility
   }
 
-  // ---------------- EXPERIENCE ----------------
-  let expLevel = detect(/intern|experience|worked|trainee/) ? 15 : 0;
-
-  if (expLevel === 0) {
+  // 4. Experience quality
+  if (/(intern|experience|trainee|worked)/.test(text)) {
+    score += 15;
+  } else {
+    score += 5;
     addIssue(
       "medium",
-      "No experience or internships",
-      "Experience improves trust and hiring confidence.",
-      "Add internships, freelance, or research exposure.",
+      "No experience",
+      "Experience improves trust and employability.",
+      "Add internships or freelance work.",
       "Software Intern at ABC Tech"
     );
   }
 
-  // ---------------- EDUCATION ----------------
-  let eduLevel = detect(/education|btech|bachelor|degree/) ? 15 : 5;
-
-  if (eduLevel === 5) {
+  // 5. Education presence
+  if (/education|btech|bachelor|degree/.test(text)) {
+    score += 15;
+  } else {
+    score += 5;
     addIssue(
       "medium",
       "Missing education section",
-      "Education provides baseline qualification.",
-      "Add degree, university, duration.",
+      "Education provides baseline validation.",
+      "Add degree, university, CGPA.",
       "BTech Computer Science, XYZ University"
     );
   }
 
   // ---------------- FINAL SCORE ----------------
-  score = skillLevel + projectLevel + impactLevel + expLevel + eduLevel;
-
   if (score > 100) score = 100;
-  if (score < 0) score = 0;
 
-  // ---------------- VERDICT ----------------
   let verdict =
     score >= 85 ? "Strong resume" :
     score >= 70 ? "Good resume" :
@@ -111,10 +104,9 @@ function roastResume() {
     score >= 30 ? "Weak resume" :
     "Very poor resume";
 
-  // ---------------- OUTPUT ----------------
   output.innerHTML = `
     <div class="score-box">
-      <h2>Resume Score: ${Math.round(score)}/100</h2>
+      <h2>Resume Score: ${score}/100</h2>
       <p><b>${verdict}</b></p>
     </div>
 
