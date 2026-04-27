@@ -53,7 +53,7 @@ function roastResume() {
     addIssue(
       "high",
       "Weak or missing technical skills",
-      "Skills are required for ATS filtering and recruiter screening.",
+      "Skills are required for ATS filtering.",
       "Add categorized skills: Languages, Tools, Frameworks.",
       "Python | Java | Git | Docker | TensorFlow"
     );
@@ -64,9 +64,9 @@ function roastResume() {
     addIssue(
       "high",
       "No strong projects detected",
-      "Projects are the strongest proof of technical ability.",
+      "Projects are strongest proof of ability.",
       "Add 2–3 projects with problem → solution → tech → result.",
-      "Built a resume parser using NLP to extract skills automatically"
+      "Built a resume parser using NLP"
     );
   }
 
@@ -75,9 +75,9 @@ function roastResume() {
     addIssue(
       "high",
       "No measurable impact",
-      "Without numbers, achievements feel unconvincing.",
-      "Add metrics like %, users, scale, or improvement.",
-      "Improved accuracy from 82% → 91% using feature engineering"
+      "Without numbers, achievements feel weak.",
+      "Add metrics like %, users, scale.",
+      "Improved accuracy from 82% → 91%"
     );
   }
 
@@ -86,9 +86,9 @@ function roastResume() {
     addIssue(
       "medium",
       "No experience or internships",
-      "Experience increases credibility significantly.",
-      "Add internships, freelance work, or research exposure.",
-      "Software Intern at ABC Tech (built automation tools using Python)"
+      "Experience improves credibility.",
+      "Add internships or freelance work.",
+      "Software Intern at ABC Tech"
     );
   }
 
@@ -97,27 +97,16 @@ function roastResume() {
     addIssue(
       "medium",
       "Missing education section",
-      "Education provides context for eligibility and background.",
-      "Add degree, university, duration, CGPA.",
-      "BTech Computer Science, XYZ University (2023–2027)"
+      "Education provides context.",
+      "Add degree and university details.",
+      "BTech Computer Science, XYZ University"
     );
   }
 
-  // ---------------- FINAL SCORE LOGIC (IMPORTANT UPGRADE) ----------------
+  // ---------------- FINAL SCORE ----------------
+  if (score < 0) score = 0;
+  if (score > 100) score = 100;
 
-let score = 100;
-
-// weighted penalties (real recruiter logic)
-if (!hasSkills) score -= 25;
-if (!hasProjects) score -= 30;
-if (!hasImpact) score -= 30;
-if (!hasExperience) score -= 15;
-if (!hasEducation) score -= 10;
-
-// clamp
-if (score < 0) score = 0;
-
-  // ---------------- VERDICT ----------------
   let verdict =
     score >= 85 ? "Strong resume" :
     score >= 70 ? "Good but needs polish" :
@@ -125,7 +114,6 @@ if (score < 0) score = 0;
     score >= 30 ? "Weak resume" :
     "Very poor resume";
 
-  // ---------------- OUTPUT ----------------
   output.innerHTML = `
     <div class="score-box">
       <h2>Resume Score: ${Math.round(score)}/100</h2>
