@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Roaster</title>
+</head>
+<body>
+    <h1>Resume Roaster</h1>
+    <textarea id="resume" rows="10" cols="50" placeholder="Paste anything here..."></textarea>
+    <br>
+    <button onclick="roast()">Roast It</button>
+    <div id="output"></div>
+
+    <script>
+        function roast() {
+            let text = document.getElementById('resume').value;
+            let feedback = [];
+            
+            // Check 1: Is this a resume?
+            let hasEmail = text.includes("@");
+            let hasPhone = text.match(/\d{10}/);
+            let hasExp = text.includes("experience");
+            
+            if (!hasEmail && !hasPhone && !hasExp) {
+                feedback.push("!! This is NOT a resume! Paste your real resume.");
+                document.getElementById('output').innerHTML = feedback.join("<br>");
+                return;  // Stop here
+            }
+            
+            feedback.push("✓ Resume detected! Now roasting...");
+            
+            // Check 2: GitHub?
+            if (text.includes("github")) {
+                feedback.push("✓ GitHub found");
+            } else {
+                feedback.push("!! No GitHub. Add it!");
+            }
+            
+            // Check 3: Numbers with %?
+            if (text.match(/\d+%/)) {
+                feedback.push("✓ Found numbers like 30%");
+            } else {
+                feedback.push("!! Add numbers like 'increased 30%'");
+            }
+            
+            // Check 4: Strong verbs?
+            if (text.includes("built") || text.includes("led") || text.includes("increased")) {
+                feedback.push("Strong verbs found");
+            } else {
+                feedback.push("!! Use words: built, led, increased");
+            }
+            
+            document.getElementById('output').innerHTML = feedback.join("<br>");
+        }
+    </script>
+</body>
+</html>
