@@ -39,5 +39,5 @@ function roastResume() {
     feedback.push("👉 Improve impact: use numbers, achievements, and measurable results.");
   }
 
-  output.innerText = feedback.join("\n\n");
+  output.innerHTML = feedback.map(line => `<p>${line}</p>`).join("");
 }
