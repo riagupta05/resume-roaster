@@ -8,8 +8,6 @@ function roastResume() {
     return;
   }
 
-  let score = 0;
-  let maxScore = 100;
   let issues = [];
 
   // ---------------- HELPERS ----------------
@@ -17,96 +15,93 @@ function roastResume() {
     issues.push({ severity, title, why, fix, example });
   }
 
-  function clamp(val) {
-    return Math.max(0, Math.min(maxScore, val));
+  function detect(regex) {
+    return regex.test(text);
   }
 
-  // ---------------- SECTION DETECTION ----------------
+  // ---------------- QUALITY SCORING (NOT BINARY) ----------------
 
-  const sections = {
-    skills: /(skills|python|java|c\+\+|javascript|rust|go)/,
-    projects: /(project|built|developed|created|designed)/,
-    impact: /\d+%|\d+\+|\d+\s*(users|students|clients|downloads)/,
-    experience: /(intern|experience|worked|trainee)/,
-    education: /education/
-  };
+  let score = 0;
 
-  // ---------------- SCORE SYSTEM (REALISTIC MODEL) ----------------
-  let skillScore = 0;
-  let projectScore = 0;
-  let impactScore = 0;
-  let experienceScore = 0;
-  let educationScore = 0;
-
-  // Skills scoring
-  if (sections.skills.test(text)) skillScore = 20;
-  else {
+  // ---------------- SKILLS QUALITY ----------------
+  let skillLevel = 0;
+  if (detect(/python|java|c\+\+|javascript|rust|go/)) {
+    skillLevel = text.includes("tensorflow") || text.includes("docker") ? 20 : 15;
+  } else {
     addIssue(
       "high",
-      "Weak or missing skills",
-      "No clear technical stack = low employability signal.",
-      "Add structured skills grouped by category.",
-      "Python | Java | Git | Docker"
+      "Weak or missing technical skills",
+      "No clear technical stack reduces employability.",
+      "Add structured skills: Languages + Tools + Frameworks.",
+      "Python | Java | Git | Docker | TensorFlow"
     );
+    skillLevel = 5;
   }
 
-  // Project scoring
-  if (sections.projects.test(text)) projectScore = 25;
-  else {
+  // ---------------- PROJECT QUALITY ----------------
+  let projectLevel = 0;
+  if (detect(/project|built|developed|created|designed/)) {
+    const hasTech = detect(/api|ml|ai|database|react|node|flask|django/);
+    projectLevel = hasTech ? 25 : 18;
+  } else {
     addIssue(
       "high",
       "No meaningful projects",
-      "Projects prove real-world ability.",
-      "Add 2–4 projects with problem → solution → result.",
-      "Built a resume parser using NLP"
+      "Projects are key proof of execution ability.",
+      "Add 2–4 projects with tech + outcome.",
+      "Built NLP resume parser extracting skills automatically"
     );
+    projectLevel = 0;
   }
 
-  // Impact scoring
-  if (sections.impact.test(text)) impactScore = 25;
-  else {
+  // ---------------- IMPACT QUALITY (CRITICAL FACTOR) ----------------
+  let impactLevel = 0;
+  const hasImpact = /\d+%|\d+\+|\d+\s*(users|students|clients|downloads)/.test(text);
+
+  if (hasImpact) {
+    impactLevel = 25;
+  } else {
     addIssue(
       "high",
       "No measurable impact",
-      "Without numbers, achievements are not credible.",
-      "Add metrics: %, users, improvement.",
-      "Improved accuracy from 82% → 91%"
+      "Without numbers, achievements lack credibility.",
+      "Add metrics: %, users, performance improvement.",
+      "Improved model accuracy from 82% → 91%"
     );
+    impactLevel = 8; // NOT zero, but heavily reduced credibility
   }
 
-  // Experience scoring
-  if (sections.experience.test(text)) experienceScore = 15;
-  else {
+  // ---------------- EXPERIENCE ----------------
+  let expLevel = detect(/intern|experience|worked|trainee/) ? 15 : 0;
+
+  if (expLevel === 0) {
     addIssue(
       "medium",
       "No experience or internships",
-      "Experience increases trust and credibility.",
-      "Add internships or freelance work.",
+      "Experience improves trust and hiring confidence.",
+      "Add internships, freelance, or research exposure.",
       "Software Intern at ABC Tech"
     );
   }
 
-  // Education scoring
-  if (sections.education.test(text)) educationScore = 15;
-  else {
+  // ---------------- EDUCATION ----------------
+  let eduLevel = detect(/education|btech|bachelor|degree/) ? 15 : 5;
+
+  if (eduLevel === 5) {
     addIssue(
       "medium",
       "Missing education section",
-      "Education provides baseline validation.",
-      "Add degree, university, CGPA.",
+      "Education provides baseline qualification.",
+      "Add degree, university, duration.",
       "BTech Computer Science, XYZ University"
     );
   }
 
   // ---------------- FINAL SCORE ----------------
-  score =
-    skillScore +
-    projectScore +
-    impactScore +
-    experienceScore +
-    educationScore;
+  score = skillLevel + projectLevel + impactLevel + expLevel + eduLevel;
 
-  score = clamp(score);
+  if (score > 100) score = 100;
+  if (score < 0) score = 0;
 
   // ---------------- VERDICT ----------------
   let verdict =
