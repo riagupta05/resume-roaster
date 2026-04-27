@@ -1,43 +1,86 @@
 function roastResume() {
-  const input = document.getElementById("resumeInput").value.toLowerCase();
+  const input = document.getElementById("resumeInput").value;
+  const text = input.toLowerCase();
   const output = document.getElementById("output");
 
-  if (input.trim() === "") {
-    output.innerText = "You didn’t even paste a resume. That’s your first problem.";
+  if (text.trim() === "") {
+    output.innerHTML = "<p>You didn’t even paste a resume. That’s your first problem.</p>";
     return;
   }
 
-  let feedback = [];
+  let sections = [];
 
-  // 🔥 Roast + Improve based on length
-  if (input.length < 100) {
-    feedback.push("This resume is way too short. It looks like you gave up halfway.");
-    feedback.push("👉 Add more details about your projects, skills, and experience.");
+  // 📏 LENGTH ANALYSIS
+  let lengthFeedback = [];
+  if (text.length < 200) {
+    lengthFeedback.push("Too short. This looks incomplete.");
+    lengthFeedback.push("👉 Add more details about projects, skills, and achievements.");
+  } else if (text.length > 1500) {
+    lengthFeedback.push("Too long. Recruiters won’t read all this.");
+    lengthFeedback.push("👉 Keep it concise (1 page ideal).");
+  } else {
+    lengthFeedback.push("Length is decent.");
   }
+  sections.push({ title: "📏 Length Analysis", content: lengthFeedback });
 
-  // 🔥 Check for skills
-  if (!input.includes("python") && !input.includes("java") && !input.includes("html")) {
-    feedback.push("You didn’t mention any technical skills. What exactly can you do?");
-    feedback.push("👉 Add a clear 'Skills' section with technologies you know.");
+  // 🛠 SKILLS
+  let skillsFeedback = [];
+  if (!text.includes("python") && !text.includes("java") && !text.includes("c++")) {
+    skillsFeedback.push("No strong technical skills mentioned.");
+    skillsFeedback.push("👉 Add a dedicated 'Skills' section.");
+  } else {
+    skillsFeedback.push("Skills detected, but make sure they are relevant.");
+    skillsFeedback.push("👉 Group them (Languages, Tools, Frameworks).");
   }
+  sections.push({ title: "🛠 Skills", content: skillsFeedback });
 
-  // 🔥 Check for projects
-  if (!input.includes("project")) {
-    feedback.push("No projects mentioned. That’s a huge red flag.");
-    feedback.push("👉 Add at least 2–3 solid projects with descriptions.");
+  // 💻 PROJECTS
+  let projectFeedback = [];
+  if (!text.includes("project")) {
+    projectFeedback.push("No projects mentioned. That’s a major weakness.");
+    projectFeedback.push("👉 Add 2–3 projects with clear descriptions.");
+  } else {
+    projectFeedback.push("Projects are mentioned.");
+    projectFeedback.push("👉 Add impact: what problem you solved, what tech you used.");
   }
+  sections.push({ title: "💻 Projects", content: projectFeedback });
 
-  // 🔥 Check for experience/internship
-  if (!input.includes("intern") && !input.includes("experience")) {
-    feedback.push("No experience section? Recruiters won’t take this seriously.");
-    feedback.push("👉 Add internships, training, or any practical work.");
+  // 📊 IMPACT / NUMBERS
+  let impactFeedback = [];
+  if (!/\d/.test(text)) {
+    impactFeedback.push("No measurable impact found.");
+    impactFeedback.push("👉 Add numbers (e.g., improved X by 30%, built for 100+ users).");
+  } else {
+    impactFeedback.push("Some measurable impact detected.");
   }
+  sections.push({ title: "📊 Impact", content: impactFeedback });
 
-  // 🔥 Default roast if decent
-  if (feedback.length === 0) {
-    feedback.push("Okay, this is not terrible… but it’s still average.");
-    feedback.push("👉 Improve impact: use numbers, achievements, and measurable results.");
+  // 📄 STRUCTURE
+  let structureFeedback = [];
+  if (!text.includes("education")) {
+    structureFeedback.push("Missing Education section.");
   }
+  if (!text.includes("experience") && !text.includes("intern")) {
+    structureFeedback.push("No experience/internship section.");
+  }
+  if (structureFeedback.length === 0) {
+    structureFeedback.push("Basic structure looks okay.");
+  } else {
+    structureFeedback.push("👉 Add missing sections for completeness.");
+  }
+  sections.push({ title: "📄 Structure", content: structureFeedback });
 
-  output.innerHTML = feedback.map(line => `<p>${line}</p>`).join("");
+  // 🔥 OVERALL ROAST
+  let overall = [];
+  overall.push("This resume is not terrible—but it’s not strong either.");
+  overall.push("👉 Focus on clarity, impact, and proof of skills.");
+  sections.push({ title: "🔥 Final Verdict", content: overall });
+
+  // 🖥 Render nicely
+  output.innerHTML = sections.map(section => `
+    <div style="margin-bottom:20px;">
+      <h3>${section.title}</h3>
+      ${section.content.map(line => `<p>${line}</p>`).join("")}
+    </div>
+  `).join("");
 }
