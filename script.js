@@ -105,18 +105,17 @@ function roastResume() {
 
   // ---------------- FINAL SCORE LOGIC (IMPORTANT UPGRADE) ----------------
 
-  // 🔥 penalty amplification (fixes inflated scoring issue)
-  let penaltyMultiplier = 1;
+let score = 100;
 
-  if (!hasProjects) penaltyMultiplier -= 0.25;
-  if (!hasImpact) penaltyMultiplier -= 0.25;
-  if (!hasSkills) penaltyMultiplier -= 0.2;
-  if (!hasExperience) penaltyMultiplier -= 0.15;
+// weighted penalties (real recruiter logic)
+if (!hasSkills) score -= 25;
+if (!hasProjects) score -= 30;
+if (!hasImpact) score -= 30;
+if (!hasExperience) score -= 15;
+if (!hasEducation) score -= 10;
 
-  score = score * penaltyMultiplier;
-
-  if (score < 0) score = 0;
-  if (score > 100) score = 100;
+// clamp
+if (score < 0) score = 0;
 
   // ---------------- VERDICT ----------------
   let verdict =
