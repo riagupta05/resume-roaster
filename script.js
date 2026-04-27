@@ -1,86 +1,110 @@
 function roastResume() {
   const input = document.getElementById("resumeInput").value;
-  const text = input.toLowerCase();
+  const text = input.toLowerCase().trim();
   const output = document.getElementById("output");
 
-  if (text.trim() === "") {
-    output.innerHTML = "<p>You didn’t even paste a resume. That’s your first problem.</p>";
+  if (!text) {
+    output.innerHTML = `<p class="bad">Paste a resume first. Empty input = no evaluation possible.</p>`;
     return;
   }
 
-  let sections = [];
+  let score = 100;
+  let issues = [];
 
-  // 📏 LENGTH ANALYSIS
-  let lengthFeedback = [];
-  if (text.length < 200) {
-    lengthFeedback.push("Too short. This looks incomplete.");
-    lengthFeedback.push("👉 Add more details about projects, skills, and achievements.");
-  } else if (text.length > 1500) {
-    lengthFeedback.push("Too long. Recruiters won’t read all this.");
-    lengthFeedback.push("👉 Keep it concise (1 page ideal).");
-  } else {
-    lengthFeedback.push("Length is decent.");
+  function addIssue(severity, title, why, fix, example) {
+    let penalty = severity === "high" ? 25 : severity === "medium" ? 15 : 8;
+    score -= penalty;
+
+    issues.push({
+      severity,
+      title,
+      why,
+      fix,
+      example
+    });
   }
-  sections.push({ title: "📏 Length Analysis", content: lengthFeedback });
 
-  // 🛠 SKILLS
-  let skillsFeedback = [];
-  if (!text.includes("python") && !text.includes("java") && !text.includes("c++")) {
-    skillsFeedback.push("No strong technical skills mentioned.");
-    skillsFeedback.push("👉 Add a dedicated 'Skills' section.");
-  } else {
-    skillsFeedback.push("Skills detected, but make sure they are relevant.");
-    skillsFeedback.push("👉 Group them (Languages, Tools, Frameworks).");
+  // ---------------- LENGTH ----------------
+  if (text.length < 300) {
+    addIssue(
+      "high",
+      "Resume is too short",
+      "Recruiters cannot evaluate skills without enough content.",
+      "Add projects, skills, and academic or internship details.",
+      "Example: Built a ML model that predicts X using Python and scikit-learn"
+    );
+  } else if (text.length > 2000) {
+    addIssue(
+      "medium",
+      "Resume is too long",
+      "Long resumes reduce readability and recruiter attention.",
+      "Keep it concise (1 page ideal). Remove filler sentences.",
+      "Replace paragraphs with bullet points"
+    );
   }
-  sections.push({ title: "🛠 Skills", content: skillsFeedback });
 
-  // 💻 PROJECTS
-  let projectFeedback = [];
-  if (!text.includes("project")) {
-    projectFeedback.push("No projects mentioned. That’s a major weakness.");
-    projectFeedback.push("👉 Add 2–3 projects with clear descriptions.");
-  } else {
-    projectFeedback.push("Projects are mentioned.");
-    projectFeedback.push("👉 Add impact: what problem you solved, what tech you used.");
+  // ---------------- SKILLS ----------------
+  if (!text.match(/python|java|c\+\+|javascript|rust/)) {
+    addIssue(
+      "high",
+      "No technical skills detected",
+      "Skills section is one of the first things recruiters scan.",
+      "Add a structured skills section: Languages, Tools, Frameworks.",
+      "Languages: Python, Java | Tools: Git, Docker | ML: Scikit-learn"
+    );
   }
-  sections.push({ title: "💻 Projects", content: projectFeedback });
 
-  // 📊 IMPACT / NUMBERS
-  let impactFeedback = [];
-  if (!/\d/.test(text)) {
-    impactFeedback.push("No measurable impact found.");
-    impactFeedback.push("👉 Add numbers (e.g., improved X by 30%, built for 100+ users).");
-  } else {
-    impactFeedback.push("Some measurable impact detected.");
+  // ---------------- PROJECTS ----------------
+  if (!text.includes("project") && !text.includes("built") && !text.includes("developed")) {
+    addIssue(
+      "high",
+      "No projects found",
+      "Projects are proof of ability, not just claims.",
+      "Add 2–4 projects with clear problem + solution + tech stack.",
+      "Built a resume parser using Python and NLP that extracts skills automatically"
+    );
   }
-  sections.push({ title: "📊 Impact", content: impactFeedback });
 
-  // 📄 STRUCTURE
-  let structureFeedback = [];
+  // ---------------- IMPACT ----------------
+  if (!/\d+%|\d+\+|\d+ users|\d+ students|\d+ improvement/.test(text)) {
+    addIssue(
+      "medium",
+      "No measurable impact",
+      "Without numbers, achievements look weak or unverified.",
+      "Add metrics like %, users, performance gain, or scale.",
+      "Improved model accuracy from 82% → 91%"
+    );
+  }
+
+  // ---------------- STRUCTURE ----------------
   if (!text.includes("education")) {
-    structureFeedback.push("Missing Education section.");
+    addIssue(
+      "medium",
+      "Missing Education section",
+      "Education is essential for context and eligibility screening.",
+      "Add degree, college, duration, and CGPA if relevant.",
+      "BTech in Informatics, XYZ University (2023–2027)"
+    );
   }
-  if (!text.includes("experience") && !text.includes("intern")) {
-    structureFeedback.push("No experience/internship section.");
-  }
-  if (structureFeedback.length === 0) {
-    structureFeedback.push("Basic structure looks okay.");
-  } else {
-    structureFeedback.push("👉 Add missing sections for completeness.");
-  }
-  sections.push({ title: "📄 Structure", content: structureFeedback });
 
-  // 🔥 OVERALL ROAST
-  let overall = [];
-  overall.push("This resume is not terrible—but it’s not strong either.");
-  overall.push("👉 Focus on clarity, impact, and proof of skills.");
-  sections.push({ title: "🔥 Final Verdict", content: overall });
+  // ---------------- SCORE FIX ----------------
+  if (score < 0) score = 0;
 
-  // 🖥 Render nicely
-  output.innerHTML = sections.map(section => `
-    <div style="margin-bottom:20px;">
-      <h3>${section.title}</h3>
-      ${section.content.map(line => `<p>${line}</p>`).join("")}
+  // ---------------- RENDER ----------------
+  output.innerHTML = `
+    <div class="score-box">
+      <h2>Resume Score: ${score}/100</h2>
+      <p>${score > 80 ? "Strong resume" : score > 60 ? "Average resume" : "Needs serious improvement"}</p>
     </div>
-  `).join("");
+
+    ${issues.map(i => `
+      <div class="issue ${i.severity}">
+        <h3>${i.title} (${i.severity.toUpperCase()})</h3>
+
+        <p><b>Why this matters:</b> ${i.why}</p>
+        <p><b>Fix:</b> ${i.fix}</p>
+        <p><b>Example:</b> ${i.example}</p>
+      </div>
+    `).join("")}
+  `;
 }

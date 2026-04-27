@@ -2,25 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Resume Roaster 🔥</title>
+  <title>Resume Analyzer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="container">
-    <h1>Resume Roaster 🔥</h1>
-    <p>Paste your resume and get brutally honest feedback</p>
+<div class="container">
+  <h1>Resume Analyzer</h1>
 
-    <textarea id="resumeInput" placeholder="Paste your resume here..."></textarea>
+  <textarea id="resumeInput" placeholder="Paste your resume..."></textarea>
+  <br>
+  <button onclick="roastResume()">Analyze</button>
 
-    <button onclick="roastResume()">Roast Me</button>
+  <div id="output"></div>
+</div>
 
-    <div class="output-box">
-      <h2>🔥 Roast:</h2>
-      <p id="output">Your roast will appear here...</p>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
