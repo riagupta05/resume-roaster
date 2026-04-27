@@ -23,8 +23,6 @@ function roastResume() {
       example
     });
   }
-
-  // ---------------- LENGTH ----------------
   if (text.length < 300) {
     addIssue(
       "high",
@@ -43,7 +41,6 @@ function roastResume() {
     );
   }
 
-  // ---------------- SKILLS ----------------
   if (!text.match(/python|java|c\+\+|javascript|rust/)) {
     addIssue(
       "high",
@@ -54,7 +51,6 @@ function roastResume() {
     );
   }
 
-  // ---------------- PROJECTS ----------------
   if (!text.includes("project") && !text.includes("built") && !text.includes("developed")) {
     addIssue(
       "high",
@@ -65,7 +61,6 @@ function roastResume() {
     );
   }
 
-  // ---------------- IMPACT ----------------
   if (!/\d+%|\d+\+|\d+ users|\d+ students|\d+ improvement/.test(text)) {
     addIssue(
       "medium",
@@ -76,7 +71,6 @@ function roastResume() {
     );
   }
 
-  // ---------------- STRUCTURE ----------------
   if (!text.includes("education")) {
     addIssue(
       "medium",
@@ -87,10 +81,8 @@ function roastResume() {
     );
   }
 
-  // ---------------- SCORE FIX ----------------
   if (score < 0) score = 0;
 
-  // ---------------- RENDER ----------------
   output.innerHTML = `
     <div class="score-box">
       <h2>Resume Score: ${score}/100</h2>
