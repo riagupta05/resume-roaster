@@ -8,118 +8,118 @@ function roastResume() {
     return;
   }
 
-  let baseScore = 100;
+  let score = 0;
+  let maxScore = 100;
   let issues = [];
 
-  // ---------------- DETECTORS ----------------
-  let hasSkills = /(python|java|c\+\+|javascript|rust|go)/.test(text);
-  let hasProjects = /(project|built|developed|created|designed)/.test(text);
-  let hasImpact = /\d+%|\d+\+|\d+\s*(users|students|clients|downloads|improvement)/.test(text);
-  let hasExperience = /(intern|experience|worked|trainee)/.test(text);
-  let hasEducation = text.includes("education");
-
-  // ---------------- CORE WEIGHT SYSTEM ----------------
-  let weights = {
-    skills: 20,
-    projects: 30,
-    impact: 30,
-    experience: 15,
-    education: 10
-  };
-
-  let penalty = 0;
-
+  // ---------------- HELPERS ----------------
   function addIssue(severity, title, why, fix, example) {
     issues.push({ severity, title, why, fix, example });
   }
 
-  // ---------------- CRITICAL EVALUATION ----------------
+  function clamp(val) {
+    return Math.max(0, Math.min(maxScore, val));
+  }
 
-  if (!hasSkills) {
-    penalty += weights.skills;
+  // ---------------- SECTION DETECTION ----------------
+
+  const sections = {
+    skills: /(skills|python|java|c\+\+|javascript|rust|go)/,
+    projects: /(project|built|developed|created|designed)/,
+    impact: /\d+%|\d+\+|\d+\s*(users|students|clients|downloads)/,
+    experience: /(intern|experience|worked|trainee)/,
+    education: /education/
+  };
+
+  // ---------------- SCORE SYSTEM (REALISTIC MODEL) ----------------
+  let skillScore = 0;
+  let projectScore = 0;
+  let impactScore = 0;
+  let experienceScore = 0;
+  let educationScore = 0;
+
+  // Skills scoring
+  if (sections.skills.test(text)) skillScore = 20;
+  else {
     addIssue(
       "high",
-      "Weak or missing technical skills",
-      "Recruiters cannot evaluate your technical capability without clear skills.",
-      "Add grouped skills: Languages, Tools, Frameworks.",
-      "Python | Java | Git | Docker | TensorFlow"
+      "Weak or missing skills",
+      "No clear technical stack = low employability signal.",
+      "Add structured skills grouped by category.",
+      "Python | Java | Git | Docker"
     );
   }
 
-  if (!hasProjects) {
-    penalty += weights.projects;
+  // Project scoring
+  if (sections.projects.test(text)) projectScore = 25;
+  else {
     addIssue(
       "high",
       "No meaningful projects",
-      "Projects are your strongest proof of ability.",
-      "Add 2–4 projects with problem → solution → tech → result.",
-      "Built a resume parser that extracts skills using NLP"
+      "Projects prove real-world ability.",
+      "Add 2–4 projects with problem → solution → result.",
+      "Built a resume parser using NLP"
     );
   }
 
-  if (!hasImpact) {
-    penalty += weights.impact;
+  // Impact scoring
+  if (sections.impact.test(text)) impactScore = 25;
+  else {
     addIssue(
       "high",
       "No measurable impact",
-      "Without numbers, your achievements are not credible.",
-      "Add metrics: %, users, scale, performance improvement.",
-      "Improved model accuracy from 82% → 91%"
+      "Without numbers, achievements are not credible.",
+      "Add metrics: %, users, improvement.",
+      "Improved accuracy from 82% → 91%"
     );
   }
 
-  if (!hasExperience) {
-    penalty += weights.experience;
+  // Experience scoring
+  if (sections.experience.test(text)) experienceScore = 15;
+  else {
     addIssue(
       "medium",
       "No experience or internships",
-      "Experience significantly improves trust and employability.",
-      "Add internships, freelance work, or research experience.",
-      "Software Intern at ABC Tech (built automation tools)"
+      "Experience increases trust and credibility.",
+      "Add internships or freelance work.",
+      "Software Intern at ABC Tech"
     );
   }
 
-  if (!hasEducation) {
-    penalty += weights.education;
+  // Education scoring
+  if (sections.education.test(text)) educationScore = 15;
+  else {
     addIssue(
       "medium",
       "Missing education section",
-      "Education provides baseline qualification context.",
-      "Add degree, university, duration, CGPA.",
-      "BTech Computer Science, XYZ University (2023–2027)"
+      "Education provides baseline validation.",
+      "Add degree, university, CGPA.",
+      "BTech Computer Science, XYZ University"
     );
   }
 
-  // ---------------- DEPENDENCY LOGIC (IMPORTANT UPGRADE) ----------------
-
-  // If impact is missing → reduce overall confidence further
-  if (!hasImpact) {
-    baseScore *= 0.85;
-  }
-
-  // If BOTH projects + impact missing → strong penalty (real-world behavior)
-  if (!hasProjects && !hasImpact) {
-    baseScore *= 0.75;
-  }
-
   // ---------------- FINAL SCORE ----------------
-  let finalScore = baseScore - penalty;
+  score =
+    skillScore +
+    projectScore +
+    impactScore +
+    experienceScore +
+    educationScore;
 
-  if (finalScore < 0) finalScore = 0;
-  if (finalScore > 100) finalScore = 100;
+  score = clamp(score);
 
   // ---------------- VERDICT ----------------
   let verdict =
-    finalScore >= 85 ? "Strong resume" :
-    finalScore >= 70 ? "Good but needs polish" :
-    finalScore >= 50 ? "Average resume" :
-    finalScore >= 30 ? "Weak resume" :
+    score >= 85 ? "Strong resume" :
+    score >= 70 ? "Good resume" :
+    score >= 50 ? "Average resume" :
+    score >= 30 ? "Weak resume" :
     "Very poor resume";
 
   // ---------------- OUTPUT ----------------
   output.innerHTML = `
     <div class="score-box">
-      <h2>Resume Score: ${Math.round(finalScore)}/100</h2>
+      <h2>Resume Score: ${Math.round(score)}/100</h2>
       <p><b>${verdict}</b></p>
     </div>
 
